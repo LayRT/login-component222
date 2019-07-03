@@ -1,0 +1,162 @@
+<link rel="import" href="bower_components/polymer/polymer-element.html">
+<link rel="import" href="bower_components/polymer/lib/elements/dom-if.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+
+<dom-module id="register-component">
+  <template>
+    <style>
+      paper-button {
+        background: #00004d;
+        color: white;
+        border-radius: 15px;
+        font-size: 15px;
+        outline: none;
+        }
+
+      #form{
+          background: #000099;
+      }
+
+      #form p{
+          margin: 0;
+          padding: 0;
+          font-weight: bold;
+          color: white;
+      }
+
+      h1{
+        margin: 0;
+        padding: 0 0 20 px;
+        text-align: center;
+        color: white;
+      }
+
+      paper-button:hover{
+          cursor: pointer;
+          background: blue ;
+      }
+
+      .inputs input[type="text"], input[type="password"]{
+        border: none;
+        border-bottom: 1px solid #fff;
+        background: transparent;
+        outline: none;
+        height: 40px;
+        font-size: 16px;
+        color: white;
+      }
+        paper-input {
+          width: 100%;
+          margin-bottom: 20px;
+          background-color: white;
+          font-size: 40px;
+          border: none;
+          color: white
+        };
+      }
+    </style>
+  <section id="form">
+    <h1>[[title]]</h1>
+    <section id="login" role="form">
+      <section class="inputs">
+        <h1>[[subtitle]]</h1>
+        <p>Username</p>
+        <input id="user" placeholder="user" type="text">
+        <p>Password</p>
+        <input id="password" placeholder="password" type="password">
+        <dom-if if="[[!_validateView(status)]]">
+          <template>
+            <input id="confirm" placeholder="confirm password" type="password">
+          </template>
+        </dom-if>
+      </section>
+      <section id="[[title]]" class$="[[_updateStyles]]">
+        <dom-if if="[[_validateView(status)]]">
+          <template>
+           <paper-button on-click="_Login" raised class="_Login">LogIn</paper-button>
+          </template>
+        </dom-if>
+        <dom-if if="[[!_validateView(status)]]">
+          <template>
+           <paper-button on-click="_Register" raised class="_Register">Register</paper-button>
+          </template>
+        </dom-if>
+      </section>
+    </section>
+  </template>
+  <script>
+    class RegisterComponent extends Polymer.Element {
+      static get is() {
+        return 'register-component';
+      }
+      static get properties() {
+        return {
+          title: {
+            type: String,
+            value: 'Register'
+          },
+          subtitle: {
+            type: String,
+            value: ''
+          },
+          status: {
+            type: Number,
+            value: 1 // 0: register || 1: login
+          },
+          user: {
+            type: Object,
+            value: {}
+          }
+        };
+      }
+      connectedCallback() {
+        super.connectedCallback();
+      }
+      _validateView(status) {
+        return status === 0;
+      }
+      _Register() {
+        const user = this.shadowRoot.querySelector('#user').value;
+        const pass = this.shadowRoot.querySelector('#password').value;
+        const confirmpass = this.shadowRoot.querySelector('#confirm').value;
+        if(pass === confirmpass) {
+          this.status = 0;
+          this.title = this.status === 0 ? 'Login' : 'Register';
+          this.set('user', {
+            userName: user,
+            password: pass
+          });
+          this.shadowRoot.querySelector('#user').value = '';
+          this.shadowRoot.querySelector('#password').value = '';
+          this.dispatchEvent(new CustomEvent('register-event',{
+            detail:{
+              username: user,
+              password: pass
+            },
+            bubbles: true,
+            composed: true
+          }));
+        }
+      }
+      _Login() {
+        const user = this.shadowRoot.querySelector('#user').value;
+        const pass = this.shadowRoot.querySelector('#password').value;
+        if(user === this.user.userName && pass === this.user.password) {
+          alert('Login Success');
+          return;
+        }
+        this.dispatchEvent(new CustomEvent('login-event',{
+          detail:{
+            username: user,
+            password: pass
+          },
+          bubbles: true,
+          composed: true
+        }));
+        alert('Login Error, your user or password are incorrect');
+      }
+    }
+    customElements.define('register-component', RegisterComponent);
+  </script>
+</dom-module>
